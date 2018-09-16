@@ -2,6 +2,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <error.h>
+#include <sys/ipc.h>
+#include <sys/shm.h>
  
 #define N_ROTATIONS 32
 #define N_NUMBERS 10
@@ -81,13 +83,27 @@ int main(int argc, char** argv)
     build_rotations(&rotations);
  
  
+    key_t key = ftok("shmfile", 1337);
+    int shmid = shmget(key, sizeof(unsigned long int), 0666 | IPC_CREAT);
+    unsigned long int* shared_number;
+
     number = 4;
     int index = 0;
  
     rotate(rotations, index, number);
     // print_rotations(rotations);
 
-    factor(rotations[0][0]);
+    // factor(rotations[0][0]);
+
+    while (1)
+    {
+        shared_number = (unsigned long int*) shmat(shmid, (void*)0, 0);
+        printf("%lu \n", *shared_number);
+
+
+    }
+    // detach boiii
+    shmdt(shared_number);
  
     return 0;
 }
