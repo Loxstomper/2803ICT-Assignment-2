@@ -67,7 +67,7 @@ int main(int argc, char** argv)
     }
 
     // detach boiii
-    detach_shared_memory(&number);
+    detach_shared_memory(&number, &client_flag, &server_flag);
 
     return 0;
 }

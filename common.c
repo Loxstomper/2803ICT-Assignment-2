@@ -27,7 +27,7 @@ void get_shared_memory(uli** number, int** client_flag, int** server_flag)
 
     key = ftok("shmfile", SERVER_FLAG_KEY);
 
-    if ((shmid = shmget(SERVER_FLAG_KEY, sizeof(int*) * 10, 0666 | IPC_CREAT)) == -1)
+    if ((shmid = shmget(SERVER_FLAG_KEY, sizeof(int*) * N_SLOTS, 0666 | IPC_CREAT)) == -1)
     {
         perror("SHMGET, server flag");
         printf("THE ERROR IS: %s\n", strerror(errno));
@@ -38,7 +38,9 @@ void get_shared_memory(uli** number, int** client_flag, int** server_flag)
     *server_flag = (int* ) shmat(shmid, (void*)0, 0);
 }
 
-void detach_shared_memory(uli** number)
+void detach_shared_memory(uli** number, int** client_flag, int** server_flag)
 {
     shmdt(&number);
+    shmdt(&client_flag);
+    shmdt(&server_flag);
 }
