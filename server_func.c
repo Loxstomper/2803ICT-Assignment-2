@@ -2,14 +2,16 @@
 
 void factor(uli n)
 {
-    static uli i = 0;
-    static int progress = 0;
+    // cant have static because it will be the same between threads
+    // static uli i = 0;
+    // static int progress = 0;
+    int progress = 0;
     // five precent
      uli progess_update = (n / 20);
      printf("%lu, 1% = %lu \n", n, progess_update);
     //  exit(1);
 
-    for (i = 1; i <= n; i ++)
+    for (uli i = 1; i <= n; i ++)
     {
         if (n % i == 0)
         {
@@ -18,7 +20,8 @@ void factor(uli n)
 
         if (i % progess_update == 0 && i != n)
         {
-            printf("Number: %lu Progress: %d \n", n, 5 * (i / progess_update));
+            progress = 5 * (i / progess_update);
+            printf("Number: %lu Progress: %d \n", n, progress); 
         }
     }
 

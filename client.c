@@ -1,7 +1,5 @@
 #include "common.h"
 
-
-
 // check the query status and display any new info
 void get_queries()
 {
@@ -18,11 +16,26 @@ void get_server_flags(int* server_flag)
     printf("\n");
 }
 
+int is_available_slot(int* slots)
+{
+    for (int i = 0; i < N_SLOTS; i ++)
+    {
+        if (slots[i] == -1)
+        {
+            return 1;
+        }
+    }
+
+    return 0;
+}
+
 
 // use a signal to cleanup - bit difficult without global vars 
+// the cleanup only really needs to be done on the server
 
 
 // maybe share a semaphore so we know if the server is full
+// maybe have one thread working in the background printing the response from server
 int main(int argc, char** argv)
 {
     char user_input[1000];
@@ -39,10 +52,25 @@ int main(int argc, char** argv)
 
     int used_slot;
 
+    printf("GLOBAL TEST: %d\n", global_test);
+
     while (1)
     {
         printf("> ");
+
         fgets(user_input, 1000, stdin);
+
+        if (!is_available_slot(slots))
+        {
+            printf("Server is busy!\n");
+            continue;
+        }
+
+        // blank input
+        if (strlen(user_input) == 1)
+        {
+            continue;
+        }
 
         if (user_input[0] == 'q')
         {
@@ -50,22 +78,16 @@ int main(int argc, char** argv)
             break;
         }
 
-        if (n_requests == 10)
-        {
-            printf("System is busy! \n");
-            continue;
-        }
-
         *number =  strtoul(user_input, NULL, 0);
-        printf("GOT :  %lu  \n", strtoul(user_input, NULL, 0));
-        printf("SAVE: %lu \n", *number);
         *client_flag = 1;
 
         // blocking, will wait for server to read
         while (*client_flag == 1) {}
 
+
         // server writes the slot the number is in into the number variable
-        printf("USING SLOT: %lu\n", *number);
+        printf("Just got a response from the server ");
+        printf("USING SLOT (number): %lu\n", *number);
 
         // get_server_flags(server_flag);
         get_server_flags(slots);

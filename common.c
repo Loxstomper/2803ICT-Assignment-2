@@ -1,5 +1,10 @@
 #include "common.h"
 
+int number_shmid;
+int client_flag_shmid;
+int server_flag_shmid;
+int slots_shmid;
+
 void get_shared_memory(uli** number, int** client_flag, int** server_flag, int** slots, int is_server)
 {
     key_t key = ftok("shmfile", NUMBER_KEY);
@@ -12,6 +17,8 @@ void get_shared_memory(uli** number, int** client_flag, int** server_flag, int**
             perror("shmget, number");
             exit(1);
         }
+
+        number_shmid = shmid;
     }
     else
     {
@@ -33,6 +40,8 @@ void get_shared_memory(uli** number, int** client_flag, int** server_flag, int**
             perror("SHMGET, client flag");
             exit(1);
         }
+
+        client_flag_shmid = shmid;
     }
     else
     {
@@ -62,6 +71,8 @@ void get_shared_memory(uli** number, int** client_flag, int** server_flag, int**
             perror("SHMGET, server flag");
             exit(1);
         }
+
+        server_flag_shmid = shmid;
     }
 
     *server_flag = (int* ) shmat(shmid, (void*)0, 0);
@@ -83,6 +94,8 @@ void get_shared_memory(uli** number, int** client_flag, int** server_flag, int**
             perror("SHMGET, slots");
             exit(1);
         }
+
+        slots_shmid = shmid;
     }
 
     *slots = (int* ) shmat(shmid, (void*)0, 0);
