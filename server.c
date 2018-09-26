@@ -28,15 +28,16 @@ int main(int argc, char** argv)
         if (*client_flag == 1)
         {
             printf("Oh boy the client has sent me a new number\n");
-            printf("The number is %lu and the slot we are going to use is %d\n", *number, 4);
-            printf("%lu \n\n", *number);
+            printf("Number: %lu \n", *number);
             // slot
-            // *number = 1;
-            *client_flag = 0;
+            *number += 10; // just testing this
             slots[0] = 1337;
-            printf("WTF: %d \n", slots[1]);
+            *client_flag = 0;
 
             // this is where we would create thread
+
+            uli l = 1 << 8;
+            factor(l);
         }
 
     }

@@ -7,7 +7,7 @@ void get_shared_memory(uli** number, int** client_flag, int** server_flag, int**
     
     if (is_server)
     {
-        if ((shmid = shmget(key, sizeof(uli), 0666 | IPC_CREAT)) == -1)
+        if ((shmid = shmget(key, sizeof(uli*), 0666 | IPC_CREAT)) == -1)
         {
             perror("shmget, number");
             exit(1);
@@ -15,7 +15,7 @@ void get_shared_memory(uli** number, int** client_flag, int** server_flag, int**
     }
     else
     {
-        if ((shmid = shmget(key, sizeof(uli), 0666)) == -1)
+        if ((shmid = shmget(key, sizeof(uli*), 0666)) == -1)
         {
             perror("shmget, number");
             exit(1);

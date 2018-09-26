@@ -20,6 +20,7 @@
 
 typedef unsigned long int uli;
 
+// void get_shared_memory   (uli** number, int** client_flag, int** server_flag, int** slots, int is_server);
 void get_shared_memory   (uli** number, int** client_flag, int** server_flag, int** slots, int is_server);
 void detach_shared_memory(uli** number, int** client_flag, int** server_flag, int** slots);
 

@@ -1,17 +1,28 @@
 #include "server_func.h"
 
-void factor(unsigned long int n)
+void factor(uli n)
 {
-    static unsigned long int i = 0;
-    unsigned long int range = n / 2;
+    static uli i = 0;
+    static int progress = 0;
+    // five precent
+     uli progess_update = (n / 20);
+     printf("%lu, 1% = %lu \n", n, progess_update);
+    //  exit(1);
 
-    for (i = 1; i <= range; i ++)
+    for (i = 1; i <= n; i ++)
     {
         if (n % i == 0)
         {
-            printf("[+] %lu \n", i);
+            // printf("[+] Number: %lu \t Factor: %lu \n", n, i);
+        }
+
+        if (i % progess_update == 0 && i != n)
+        {
+            printf("Number: %lu Progress: %d \n", n, 5 * (i / progess_update));
         }
     }
+
+    printf("Done\n");
 }
 
 void rotate(unsigned long int** rotations, int index, unsigned long int number)

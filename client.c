@@ -60,17 +60,15 @@ int main(int argc, char** argv)
         printf("GOT :  %lu  \n", strtoul(user_input, NULL, 0));
         printf("SAVE: %lu \n", *number);
         *client_flag = 1;
-        slots[1] = 696969696;
 
         // blocking, will wait for server to read
         while (*client_flag == 1) {}
 
         // server writes the slot the number is in into the number variable
         printf("USING SLOT: %lu\n", *number);
-        printf("TEST: %d \n", slots[0]);
 
-
-        get_server_flags(server_flag);
+        // get_server_flags(server_flag);
+        get_server_flags(slots);
     }
 
     // detach boiii
