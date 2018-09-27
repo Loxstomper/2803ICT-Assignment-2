@@ -1,5 +1,7 @@
 #include "common.h"
 
+/* going to try use a struct for shared memory */
+
 // check the query status and display any new info
 void get_queries()
 {
@@ -46,13 +48,12 @@ int main(int argc, char** argv)
     int* server_flag;
     int* slots;
 
-    get_shared_memory(&number, &client_flag, &server_flag, &slots, 1);
+    get_shared_memory(&number, &client_flag, &server_flag, &slots, 0);
 
     *client_flag = 0;
 
     int used_slot;
 
-    printf("GLOBAL TEST: %d\n", global_test);
 
     while (1)
     {

@@ -49,7 +49,7 @@ int main(int argc, char** argv)
         if (*client_flag == 1)
         {
             printf("Oh boy the client has sent me a new number\n");
-            printf("Number: %lu \n", *number);
+            printf("Number: %Lu \n", *number);
 
             // figure out what slot is usable
             slot_to_use = -1;
