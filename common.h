@@ -23,10 +23,10 @@ int slots_shmid;
 
 struct Shared_Memory
 {
-    uli number;
-    uli slots[N_SLOTS];
-    char client_flag;
-    char server_flag[10];
+    uli   number;
+    uli   slots[N_SLOTS];
+    char  server_flag[N_SLOTS];
+    char  client_flag;
 } typedef Shared_Memory;
 
 #endif

@@ -12,4 +12,6 @@ void build_rotations(unsigned long int*** rotations);
  
 void print_rotations(unsigned long int** rotations);
 
+void debug_print(Shared_Memory** shared_memory);
+
 #endif

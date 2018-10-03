@@ -109,6 +109,10 @@ int main(int argc, char** argv)
 
             // this is where we would create thread
 
+            printf("DEBUG PRINT\n\n");
+
+            debug_print(&shared_memory);
+
             uli l = 1 << 8;
             // factor(l);
         }

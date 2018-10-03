@@ -75,3 +75,20 @@ void print_rotations(unsigned long int** rotations)
         }
     }
 }
+
+void debug_print(Shared_Memory** shared_memory)
+{
+    printf("\n\nnumber: %d \n", (*shared_memory)->number);
+    printf("client flag: %d \n", (*shared_memory)->client_flag);
+    printf("slots: \n");
+
+    for (int i = 0; i < N_SLOTS; i ++, printf("[%lu] ", (*shared_memory)->slots[i])) {}
+    printf("\n");
+
+    printf("server flag: \n");
+    for (int i = 0; i < N_SLOTS; i ++, printf("[%d] ", (*shared_memory)->server_flag[i])) {}
+    printf("\n");
+
+
+
+}
