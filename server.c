@@ -2,34 +2,61 @@
 #include "server_func.h"
 
 
+// making this a yucky global so it can be deleted on CTRL+C
+int shm_id;
+
 void cleanup(int param)
 {
     printf("\nCleaning up.....\n");
-    shmctl(number_shmid,        IPC_RMID, 0);
-    shmctl(client_flag_shmid,   IPC_RMID, 0);
-    shmctl(server_flag_shmid,   IPC_RMID, 0);
-    shmctl(slots_shmid,         IPC_RMID, 0);
+    printf("Removing shared memory\n");
+    shmctl(shm_id, IPC_RMID, NULL);
     printf("Done\n");
-    exit(1);
+    exit(0);
 }
 
-// NEED TO DELETE THE SHARED MEMORY, shmctl  
+// attaches to shared memory and initialises the struct
+void create_shared_memory(Shared_Memory** shared_memory)
+{
+    key_t key = ftok("shmfile", SHARED_MEMORY_KEY);
+    shm_id = shmget(key, sizeof(Shared_Memory), IPC_CREAT | 0666);
+
+    // validate that it created
+    if (shm_id < 0)
+    {
+        perror("Shared memory creation failed....");
+        exit(1);
+    }
+
+    // update pointer to the shared memory
+    *shared_memory = (Shared_Memory*) shmat(shm_id, NULL, 0);
+
+    // now do the initialisation - from task sheet - (basically just zero everything)
+    (*shared_memory)->client_flag = 0;
+    (*shared_memory)->number = 0;
+
+    for (int i = 0; i < N_SLOTS; i ++)
+    {
+        (*shared_memory)->slots[i] = -1; // means empty
+        (*shared_memory)->server_flag[i] = 0;
+
+    }
+
+
+}
+
 int main(int argc, char** argv)
 {
 
     signal(SIGINT, cleanup);
 
-    uli* number;
-    int* client_flag;
-    int* server_flag;
-    int* slots;
-
     unsigned long int** rotations;
     // mallocs the 2d array
     build_rotations(&rotations);
 
+    Shared_Memory* shared_memory;
 
-    get_shared_memory(&number, &client_flag, &server_flag, &slots, 1);
+    create_shared_memory(&shared_memory);
+
 
     int slot_to_use;
     // number = 4;
@@ -41,21 +68,21 @@ int main(int argc, char** argv)
     // factor(rotations[0][0]);
 
     // make all the slots value to be -1 "empty / finished"
-    for (int i = 0; i < N_SLOTS; slots[i] = -1, i ++) {}
+    // for (int i = 0; i < N_SLOTS; slots[i] = -1, i ++) {}
 
 
     while (1)
     {
-        if (*client_flag == 1)
+        if (shared_memory->client_flag == 1)
         {
             printf("Oh boy the client has sent me a new number\n");
-            printf("Number: %lu \n", *number);
+            printf("Number: %lu \n", shared_memory->number);
 
             // figure out what slot is usable
             slot_to_use = -1;
             for (int i = 0; i < N_SLOTS; i ++)
             {
-                if (slots[i] == -1)
+                if (shared_memory->slots[i] == -1)
                 {
                     slot_to_use = i;
                     break;
@@ -69,16 +96,16 @@ int main(int argc, char** argv)
             else
             {
                 printf("There is not an available slot to use \n\n");
-                *client_flag = 0;
+                shared_memory->client_flag = 0;
                 continue;
             }
 
             // slot
-            slots[slot_to_use] = 69;
-            *number = slot_to_use;
-            printf("THE VALUE OF NUMBER NOW WHICH IS THE SLOT IS %lu \n", *number);
+            shared_memory->slots[slot_to_use] = 69;
+            shared_memory->number = slot_to_use;
+            printf("THE VALUE OF NUMBER NOW WHICH IS THE SLOT IS %lu \n", shared_memory->number);
 
-            *client_flag = 0;
+            shared_memory->client_flag = 0;
 
             // this is where we would create thread
 
@@ -88,8 +115,8 @@ int main(int argc, char** argv)
 
     }
  
-    // detach boiii
-    detach_shared_memory(&number, &client_flag, &server_flag, &slots);
+    // // detach boiii
+    // detach_shared_memory(&number, &client_flag, &server_flag, &slots);
 
     return 0;
 }

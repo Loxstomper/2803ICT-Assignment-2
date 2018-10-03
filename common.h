@@ -10,11 +10,7 @@
 #include <errno.h>
 #include <signal.h>
 
-#define NUMBER_KEY 6969 
-#define CLIENT_FLAG_KEY 10001   
-#define SERVER_FLAG_KEY 8008135   
-#define SLOTS_KEY 8008136   
-
+#define SHARED_MEMORY_KEY 8008
 #define N_SLOTS 10
 #define N_ROTATIONS 32
 
@@ -25,8 +21,12 @@ int client_flag_shmid;
 int server_flag_shmid;
 int slots_shmid;
 
-// void get_shared_memory   (uli** number, int** client_flag, int** server_flag, int** slots, int is_server);
-void get_shared_memory   (uli** number, int** client_flag, int** server_flag, int** slots, int is_server);
-void detach_shared_memory(uli** number, int** client_flag, int** server_flag, int** slots);
+struct Shared_Memory
+{
+    uli number;
+    uli slots[N_SLOTS];
+    char client_flag;
+    char server_flag[10];
+} typedef Shared_Memory;
 
 #endif
