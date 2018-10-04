@@ -106,7 +106,6 @@ int main(int argc, char** argv)
         {
             printf("Goodbye ( ﾟ▽ﾟ)/ \n");
             cleanup(1);
-            break;
         }
 
         shared_memory->number = strtoul(user_input, NULL, 0);
@@ -117,8 +116,21 @@ int main(int argc, char** argv)
 
 
         // server writes the slot the number is in into the number variable
-        printf("Just got a response from the server ");
+        // printf("Just got a response from the server ");
         printf("USING SLOT (number): %lu\n", shared_memory->number);
+
+        int slot = shared_memory->number;
+        uli last;
+        uli update;
+
+        while (shared_memory->slots[slot] != -1)
+        {
+            while (shared_memory->server_flag[slot] == 0) {}
+            printf("NEW FACTOR!: %lu\n", shared_memory->slots[slot]);
+            shared_memory->server_flag[slot] = 1;
+        }
+
+        printf("GOT ALL FACTORS\n");
 
         // get_server_flags(server_flag);
         // get_server_flags(shared_memory->slots);

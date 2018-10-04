@@ -38,10 +38,7 @@ void create_shared_memory(Shared_Memory** shared_memory)
     {
         (*shared_memory)->slots[i] = -1; // means empty
         (*shared_memory)->server_flag[i] = 0;
-
     }
-
-
 }
 
 int main(int argc, char** argv)
@@ -75,8 +72,8 @@ int main(int argc, char** argv)
     {
         if (shared_memory->client_flag == 1)
         {
-            printf("Oh boy the client has sent me a new number\n");
-            printf("Number: %lu \n", shared_memory->number);
+            // printf("Oh boy the client has sent me a new number\n");
+            // printf("Number: %lu \n", shared_memory->number);
 
             // figure out what slot is usable
             slot_to_use = -1;
@@ -91,11 +88,11 @@ int main(int argc, char** argv)
 
             if (slot_to_use != -1)
             {
-                printf("There is an available slot and its index is: %d \n\n", slot_to_use);
+                // printf("There is an available slot and its index is: %d \n\n", slot_to_use);
             }
             else
             {
-                printf("There is not an available slot to use \n\n");
+                // printf("There is not an available slot to use \n\n");
                 shared_memory->client_flag = 0;
                 continue;
             }
@@ -103,15 +100,25 @@ int main(int argc, char** argv)
             // slot
             shared_memory->slots[slot_to_use] = 69;
             shared_memory->number = slot_to_use;
-            printf("THE VALUE OF NUMBER NOW WHICH IS THE SLOT IS %lu \n", shared_memory->number);
+            // printf("THE VALUE OF NUMBER NOW WHICH IS THE SLOT IS %lu \n", shared_memory->number);
 
             shared_memory->client_flag = 0;
 
             // this is where we would create thread
+            for (int i = 0; i < 5; i ++)
+            {
+                // the client will change value to 0 when its been read
+                while (shared_memory->server_flag[0] == 1) {}
 
-            printf("DEBUG PRINT\n\n");
+                // update value
+                shared_memory->slots[0] = i;
+                // signal to client that an update has occured
+                shared_memory->server_flag[0] = 1;
+            }
 
-            debug_print(&shared_memory);
+            // printf("DEBUG PRINT\n\n");
+
+            // debug_print(&shared_memory);
 
             uli l = 1 << 8;
             // factor(l);
