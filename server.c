@@ -44,6 +44,7 @@ void create_shared_memory(Shared_Memory** shared_memory)
 int main(int argc, char** argv)
 {
 
+    // THE CLIENT KILLS SERVER
     signal(SIGINT, cleanup);
 
     unsigned long int** rotations;
@@ -70,6 +71,12 @@ int main(int argc, char** argv)
 
     while (1)
     {
+        // the client quits the server
+        if (shared_memory->client_flag == 'q')
+        {
+            cleanup(0);
+        }
+
         if (shared_memory->client_flag == 1)
         {
             // printf("Oh boy the client has sent me a new number\n");
@@ -105,16 +112,16 @@ int main(int argc, char** argv)
             shared_memory->client_flag = 0;
 
             // this is where we would create thread
-            for (int i = 0; i < 5; i ++)
-            {
-                // the client will change value to 0 when its been read
-                while (shared_memory->server_flag[0] == 1) {}
+            // for (int i = 0; i < 5; i ++)
+            // {
+            //     // the client will change value to 0 when its been read
+            //     while (shared_memory->server_flag[0] == 1) {}
 
-                // update value
-                shared_memory->slots[0] = i;
-                // signal to client that an update has occured
-                shared_memory->server_flag[0] = 1;
-            }
+            //     // update value
+            //     shared_memory->slots[0] = i;
+            //     // signal to client that an update has occured
+            //     shared_memory->server_flag[0] = 1;
+            // }
 
             // printf("DEBUG PRINT\n\n");
 

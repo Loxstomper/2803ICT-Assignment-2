@@ -90,6 +90,14 @@ int main(int argc, char** argv)
 
         fgets(user_input, 1000, stdin);
 
+        if (user_input[0] == 'q')
+        {
+            // tells the server to go die
+            shared_memory->client_flag = 'q';
+            printf("Goodbye ( ﾟ▽ﾟ)/ \n");
+            cleanup(1);
+        }
+
         if (!is_available_slot(shared_memory->slots))
         {
             printf("Server is busy!\n");
@@ -102,17 +110,14 @@ int main(int argc, char** argv)
             continue;
         }
 
-        if (user_input[0] == 'q')
-        {
-            printf("Goodbye ( ﾟ▽ﾟ)/ \n");
-            cleanup(1);
-        }
 
         shared_memory->number = strtoul(user_input, NULL, 0);
         shared_memory->client_flag = 1;
 
         // blocking, will wait for server to read
         while (shared_memory->client_flag == 1) {}
+
+        while (shared_memory->server_flag[0] == 1) {}
 
 
         // server writes the slot the number is in into the number variable
@@ -123,14 +128,17 @@ int main(int argc, char** argv)
         uli last;
         uli update;
 
-        while (shared_memory->slots[slot] != -1)
-        {
-            while (shared_memory->server_flag[slot] == 0) {}
-            printf("NEW FACTOR!: %lu\n", shared_memory->slots[slot]);
-            shared_memory->server_flag[slot] = 1;
-        }
+        shared_memory->server_flag[0] = 0;
 
-        printf("GOT ALL FACTORS\n");
+
+        // while (shared_memory->slots[slot] != -1)
+        // {
+        //     while (shared_memory->server_flag[slot] == 0) {}
+        //     printf("NEW FACTOR!: %lu\n", shared_memory->slots[slot]);
+        //     shared_memory->server_flag[slot] = 1;
+        // }
+
+        // printf("GOT ALL FACTORS\n");
 
         // get_server_flags(server_flag);
         // get_server_flags(shared_memory->slots);
