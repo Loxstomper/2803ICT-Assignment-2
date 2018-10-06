@@ -3,7 +3,6 @@
 
 #include "common.h"
 
-
 void factor(unsigned long int n);
 
 void rotate(unsigned long int** rotations, int index, unsigned long int number);
