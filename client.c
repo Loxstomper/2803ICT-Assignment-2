@@ -4,11 +4,15 @@
 
 int shm_id;
 
+// had to make global so the CTRL+C event cant modify the shared memory to shutdown server
+Shared_Memory* shared_memory;
+
 void cleanup(int param)
 {
     printf("\nCleaning up.....\n");
     printf("Detaching from shared memory\n");
     // shmctl(shm_id, IPC_RMID, NULL);
+    shared_memory->client_flag = 'q';
     printf("Done\n");
     exit(0);
 }
@@ -78,7 +82,6 @@ int main(int argc, char** argv)
 
     int used_slot;
 
-    Shared_Memory* shared_memory;
 
     connect_shared_memory(&shared_memory);
 
