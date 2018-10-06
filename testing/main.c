@@ -40,7 +40,7 @@ int new_job(Job_Queue* job_queue, int val)
 
 int take_job(Job_Queue* job_queue)
 {
-    if ( (*job_queue).size = 0 )
+    if ( (*job_queue).size == 0 )
     {
         return 0;
     }
@@ -71,6 +71,28 @@ void print_jobs(Job_Queue* job_queue)
     printf("\n");
 }
 
+void init_queue(Job_Queue* queue, int length)
+{
+    (*queue).head = 0;
+    (*queue).tail = -1;
+    (*queue).size = 0;
+    (*queue).length = length;
+    (*queue).jobs = (int*) calloc(sizeof(int), sizeof(int) * length);
+
+    if ((*queue).jobs == NULL)
+    {
+        perror("Calloc failed in job queue");
+    }
+}
+
+
+void init_thread_pool(Thread_Pool* tp, int capacity)
+{
+    (*tp).capacity = capacity;
+    (*tp).used = 0;
+
+    // create the threads
+}
 
 
 
@@ -93,18 +115,27 @@ int main(int argc, char** argv)
     thread_pool.used = 0;
 
     Job_Queue job_queue;
-    job_queue.head = 0;
-    job_queue.tail = -1;
-    job_queue.size = 0;
-    job_queue.length = 8;
-    job_queue.jobs = (int*) calloc(sizeof(int), sizeof(int) * job_queue.length);
 
-    new_job(&job_queue, 5);
-    new_job(&job_queue, 2);
-    new_job(&job_queue, 1);
+    init_queue(&job_queue, 8);
 
     printf("SIZE: %d \n", job_queue.size);
     printf("LENGTH: %d \n", job_queue.length);
+
+    new_job(&job_queue, 1);
+    new_job(&job_queue, 2);
+    new_job(&job_queue, 3);
+
+    take_job(&job_queue);
+
+    new_job(&job_queue, 4);
+    new_job(&job_queue, 5);
+
+    take_job(&job_queue);
+
+    new_job(&job_queue, 6);
+    new_job(&job_queue, 7);
+    new_job(&job_queue, 8);
+    new_job(&job_queue, 9);
 
 
     print_jobs(&job_queue);
