@@ -33,7 +33,7 @@ int new_job(Job_Queue* job_queue, Job val)
 {
     if ( (*job_queue).size < (*job_queue).length )
     {
-        printf("ADDED: %d \n", val);
+        // printf("ADDED: %d \n", val);
         // calculate position of new tail (with wrapping)
         (*job_queue).tail = ((*job_queue).tail + 1) % (*job_queue).length;
         // (*job_queue).tail --; 
@@ -59,7 +59,7 @@ Job take_job(Job_Queue* job_queue)
 
     pop = (*job_queue).jobs[(*job_queue).head];
 
-    printf("POPPING: %d\n", pop);
+    // printf("POPPING: %d\n", pop);
     // (*job_queue).jobs[(*job_queue).head] = -1;
 
     (*job_queue).head = ((*job_queue).head + 1) % (*job_queue).length;
@@ -75,7 +75,7 @@ void print_jobs(Job_Queue* job_queue)
     {
         v = (*job_queue).jobs[ ((*job_queue).head + i) % (*job_queue).length ];
 
-        printf("SLOT: %d, N: %d", v.slot, v.n);
+        printf("SLOT: %d, N: %d \n", v.slot, v.n);
     }
     
     printf("\n");
@@ -96,21 +96,57 @@ void init_queue(Job_Queue* queue, int length)
     }
 }
 
+void* thread_function(void* j_q)
+{
+    printf("Thread started \n");
+    // this makes sense because these threads are going to be persistent
+    Job_Queue* job_queue = (Job_Queue*) j_q;
+    Job to_do;
 
-void init_thread_pool(Thread_Pool* tp, int capacity)
+    while (1)
+    {
+        to_do = take_job(job_queue);
+
+        if (to_do.slot == -1 && to_do.n == -1)
+        {
+            // printf("EMPTY JOBS\n");
+            continue;
+        }
+        printf("WORKING ON JOB: slot: %d n: %d \n", to_do.slot, to_do.n);
+    }
+
+
+}
+
+void init_thread_pool(Thread_Pool* tp, int capacity, Job_Queue* job_queue)
 {
     (*tp).capacity = capacity;
     (*tp).used = 0;
+    (*tp).pool = (pthread_t*) malloc(sizeof(pthread_t) * capacity);
 
     // create the threads
+    for (int i = 0; i < (*tp).capacity; i ++)
+    {
+        if (pthread_create(&(*tp).pool[i], NULL, thread_function, (void*) job_queue))
+        {
+            perror("Failed to create thread \n");
+            exit(1);
+        }
+
+        // pthread_join((*tp).pool[i], NULL);
+
+        // CAUSING SEG FAULTS
+        // pthread_detach((*tp).pool[i]);
+    }
+
+    for (int i = 0; i < (*tp).capacity; i ++)
+    {
+        pthread_detach((*tp).pool[i]);
+    }
 }
 
 
 
-void thread_function()
-{
-
-}
 
 
 
@@ -122,23 +158,39 @@ int main(int argc, char** argv)
     int n_threads = 4;
 
     Thread_Pool thread_pool;
-    thread_pool.capacity = n_threads;
-    thread_pool.used = 0;
 
     Job_Queue job_queue;
 
-    init_queue(&job_queue, 8);
+    init_queue(&job_queue, 320);
 
-    printf("SIZE: %d \n", job_queue.size);
-    printf("LENGTH: %d \n", job_queue.length);
+    // printf("SIZE: %d \n", job_queue.size);
+    // printf("LENGTH: %d \n", job_queue.length);
 
-    Job a = {1, 2};
-    new_job(&job_queue, a);
-    a.slot = 2;
-    a.n = 4;
-    new_job(&job_queue, a);
 
-    print_jobs(&job_queue);
+
+    // lets get the thread pool working
+    init_thread_pool(&thread_pool, n_threads, &job_queue);
+    printf("FINISHED MAKING THREADS\n");
+
+    // adds all the jobs
+    Job job;
+    for (int i = 0; i < 4; i ++)
+    {
+        job.slot = i;
+        for (int j = 0; j < 4; j ++)
+        {
+           job.n = j; 
+
+            // pass by value
+           new_job(&job_queue, job);
+        }
+    }
+    // print_jobs(&job_queue);
+
+    while (1)
+    {
+
+    }
 
     return 0;
 }
