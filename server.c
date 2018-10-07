@@ -36,6 +36,9 @@ int main(int argc, char** argv)
         pthread_mutex_init(&slot_mutex[i], NULL);
     }
 
+    // how many jobs remaining per job - zeroing too
+    int* remaining_jobs = (int*) calloc(sizeof(int), sizeof(int) * N_SLOTS);
+
     // setup threadpool and jobqueue
     Thread_Pool thread_pool;
     Job_Queue job_queue;
@@ -46,15 +49,11 @@ int main(int argc, char** argv)
     thread_args.shared_memory = shared_memory;
     thread_args.slot_mutex = slot_mutex;
     thread_args.job_queue = &job_queue;
+    thread_args.remaining_jobs = remaining_jobs;
 
 
     init_queue(&job_queue, N_SLOTS * N_ROTATIONS);
     init_thread_pool(&thread_pool, n_threads, &job_queue, &thread_args);
-
-
-
-
-
 
 
     int slot_to_use;
@@ -69,8 +68,8 @@ int main(int argc, char** argv)
 
         if (shared_memory->client_flag == 1)
         {
-            printf("Oh boy the client has sent me a new number\n");
-            printf("Number: %lu \n", shared_memory->number);
+            // printf("Oh boy the client has sent me a new number\n");
+            // printf("Number: %lu \n", shared_memory->number);
 
             // figure out what slot is usable
             slot_to_use = -1;
@@ -99,6 +98,9 @@ int main(int argc, char** argv)
             // do the rotations and add all the rotations to the job queue
             rotate(rotations, slot_to_use, shared_memory->number);
 
+            // update the remaining jobs
+            remaining_jobs[slot_to_use] = 32;
+
             pthread_mutex_lock(&job_queue.add_mutex);
             for (int i = 0; i < N_ROTATIONS; i ++)
             {
@@ -109,33 +111,14 @@ int main(int argc, char** argv)
             pthread_mutex_unlock(&job_queue.add_mutex);
 
 
-            // slot
+            // slot - give intial value of 0
             shared_memory->slots[slot_to_use] = 0;
+            shared_memory->server_flag[slot_to_use] = 0;
             shared_memory->number = slot_to_use;
             // printf("THE VALUE OF NUMBER NOW WHICH IS THE SLOT IS %lu \n", shared_memory->number);
 
             shared_memory->client_flag = 0;
 
-            // print_jobs(&job_queue);
-
-            // this is where we would create thread
-            // for (int i = 0; i < 5; i ++)
-            // {
-            //     // the client will change value to 0 when its been read
-            //     while (shared_memory->server_flag[0] == 1) {}
-
-            //     // update value
-            //     shared_memory->slots[0] = i;
-            //     // signal to client that an update has occured
-            //     shared_memory->server_flag[0] = 1;
-            // }
-
-            // printf("DEBUG PRINT\n\n");
-
-            // debug_print(&shared_memory);
-
-            uli l = 1 << 8;
-            // factor(l);
         }
 
     }

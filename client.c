@@ -2,10 +2,26 @@
 
 
 
+struct Query
+{
+    unsigned long int n;
+    unsigned long int* slots;
+    char* server_flag;
+    // start time
+} typedef Query;
+
 int shm_id;
 
 // had to make global so the CTRL+C event cant modify the shared memory to shutdown server
 Shared_Memory* shared_memory;
+
+
+
+void setup_query()
+{
+
+}
+
 
 void cleanup(int param)
 {
@@ -72,8 +88,6 @@ int main(int argc, char** argv)
 
     connect_shared_memory(&shared_memory);
 
-    int i = 0;
-
     while (1)
     {
         printf("> ");
@@ -124,6 +138,8 @@ int main(int argc, char** argv)
             printf("NEW FACTOR!: %lu\n", shared_memory->slots[slot]);
             shared_memory->server_flag[slot] = 0;
         }
+
+        printf("Complete \n");
     }
 
     return 0;

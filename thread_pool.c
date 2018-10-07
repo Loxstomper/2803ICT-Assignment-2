@@ -54,13 +54,12 @@ void* thread_function(void* t_args)
                 // update the slot with the factor
                 // only once client has read it
                 while (thread_args->shared_memory->server_flag[to_do.slot] == 1) {}
-                printf("FACTOR: %lu \n", i);
+                // printf("FACTOR: %lu \n", i);
 
                 // mutex for the slot index
                 pthread_mutex_lock(&thread_args->slot_mutex[to_do.slot]);
                 // update the value in the slot with the factor
                 thread_args->shared_memory->slots[to_do.slot] = i;
-                printf("THE VALUE IS NOW: %lu \n", thread_args->shared_memory->slots[to_do.slot]);
 
                 pthread_mutex_unlock(&thread_args->slot_mutex[to_do.slot]);
 
@@ -75,7 +74,14 @@ void* thread_function(void* t_args)
             // }
         }
 
-        printf("DONE\n");
+        thread_args->remaining_jobs[to_do.slot] --;
+        printf("JOBS REMANING: %d \n", thread_args->remaining_jobs[to_do.slot]);
+
+        // bit dodgy
+        if (thread_args->remaining_jobs[to_do.slot] == 0)
+        {
+            thread_args->shared_memory->server_flag[to_do.slot] = 'f';
+        }
     
     }
 

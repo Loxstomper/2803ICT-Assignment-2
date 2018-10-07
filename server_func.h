@@ -9,6 +9,8 @@ struct Thread_Args
     Shared_Memory* shared_memory;
     pthread_mutex_t* slot_mutex;
     Job_Queue* job_queue;
+    char** progress;
+    int* remaining_jobs;
 } typedef Thread_Args;
 
 // making this a yucky global so it can be deleted on CTRL+C
@@ -28,5 +30,7 @@ void cleanup(int param);
 
 // attaches to shared memory and initialises the struct
 void create_shared_memory(Shared_Memory** shared_memory);
+
+void check_complete();
 
 #endif
