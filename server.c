@@ -1,5 +1,7 @@
 #include "common.h" 
 #include "server_func.h"
+#include "thread_pool.h"
+#include "job_queue.h"
 
 
 // making this a yucky global so it can be deleted on CTRL+C

@@ -1,6 +1,6 @@
 all: server client
 
-server: server.o common.o server_func.o
+server: server.o common.o server_func.o job_queue.o thread_pool.o
 	gcc -o ./dist/server server.o common.o server_func.o
 
 server.o: server.c
@@ -17,6 +17,12 @@ client.o: client.c
 
 common.o: common.c
 	gcc -c common.c
+
+job_queue.o: job_queue.c
+	gcc -c job_queue.c
+
+thread_pool.o: thread_pool.c 
+	gcc -c thread_pool.c
 
 clean:
 	rm *.o
