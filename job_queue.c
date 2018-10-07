@@ -46,7 +46,7 @@ void print_jobs(Job_Queue* job_queue)
     {
         v = (*job_queue).jobs[ ((*job_queue).head + i) % (*job_queue).length ];
 
-        printf("SLOT: %d, N: %d \n", v.slot, v.n);
+        printf("SLOT: %d, N: %lu \n", v.slot, v.n);
     }
     
     printf("\n");

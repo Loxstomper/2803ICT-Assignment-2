@@ -10,6 +10,7 @@ void* thread_function(void* j_q)
     // not sure if i need to use mutex
     while (1)
     {
+        to_do.slot = -1;
         // MUTEX LOCK
         pthread_mutex_lock(&job_queue->pop_mutex);
 
@@ -19,7 +20,15 @@ void* thread_function(void* j_q)
         }
 
         // MUTEX UNLOCK
-        pthread_mutex_lock(&job_queue->pop_mutex);
+        pthread_mutex_unlock(&job_queue->pop_mutex);
+
+        // this shouldnt happen but just in case
+        if (to_do.slot == -1)
+        {
+            continue;
+        }
+
+
 
         // if (to_do.slot == -1 && to_do.n == -1)
         // {
@@ -27,6 +36,29 @@ void* thread_function(void* j_q)
         //     continue;
         // }
         printf("WORKING ON JOB: slot: %d n: %d \n", to_do.slot, to_do.n);
+
+        int progress = 0;
+        // five precent
+        // unsigned long int progess_update = (to_do.n / 20);
+        // printf("%lu, 1% = %lu \n", to_do.n, progess_update);
+        //  exit(1);
+
+        for (unsigned long int i = 1; i <= to_do.n; i ++)
+        {
+            if (to_do.n % i == 0)
+            {
+                // printf("[+] Number: %lu \t Factor: %lu \n", n, i);
+            }
+
+            // if (i % progess_update == 0 && i != to_do.n)
+            // {
+            //     progress = 5 * (i / progess_update);
+            //     printf("Number: %lu Progress: %d \n", to_do.n, progress); 
+            // }
+        }
+
+        printf("Done\n");
+    
     }
 
 

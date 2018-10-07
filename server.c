@@ -3,6 +3,13 @@
 #include "thread_pool.h"
 #include "job_queue.h"
 
+struct Thread_Args
+{
+    pthread_mutex_t** slot_mutex;
+    unsigned long int** slots;
+    char** server_flag;
+} typedef Thread_Args;
+
 int main(int argc, char** argv)
 {
     // THE CLIENT KILLS SERVER
@@ -24,6 +31,7 @@ int main(int argc, char** argv)
     // setup threadpool and jobqueue
     Thread_Pool thread_pool;
     Job_Queue job_queue;
+    Job job_to_add;
 
     init_queue(&job_queue, N_SLOTS * N_ROTATIONS);
     init_thread_pool(&thread_pool, n_threads, &job_queue);
@@ -37,6 +45,18 @@ int main(int argc, char** argv)
     Shared_Memory* shared_memory;
 
     create_shared_memory(&shared_memory);
+
+    pthread_mutex_t* slot_mutex[N_SLOTS];
+    for (int i = 0; i < N_SLOTS; i ++)
+    {
+        pthread_mutex_init(slot_mutex[i], NULL);
+    }
+
+    Thread_Args thread_args;
+    thread_args.slots = &shared_memory->slots;
+    thread_args.server_flag = &shared_memory->server_flag;
+    thread_args.slot_mutex = &slot_mutex;
+
 
 
     int slot_to_use;
@@ -78,8 +98,10 @@ int main(int argc, char** argv)
 
             if (slot_to_use != -1)
             {
-                // printf("There is an available slot and its index is: %d \n\n", slot_to_use);
+                printf("There is an available slot and its index is: %d \n\n", slot_to_use);
+
             }
+            // this wont happen though, because validation is performed client side
             else
             {
                 // printf("There is not an available slot to use \n\n");
@@ -87,12 +109,26 @@ int main(int argc, char** argv)
                 continue;
             }
 
+            // do the rotations and add all the rotations to the job queue
+            rotate(rotations, slot_to_use, shared_memory->number);
+
+            pthread_mutex_lock(&job_queue.add_mutex);
+            for (int i = 0; i < N_ROTATIONS; i ++)
+            {
+                job_to_add.slot = slot_to_use;
+                job_to_add.n = rotations[slot_to_use][i];
+                new_job(&job_queue, job_to_add);
+            }
+            pthread_mutex_unlock(&job_queue.add_mutex);
+
             // slot
-            shared_memory->slots[slot_to_use] = 69;
+            shared_memory->slots[slot_to_use] = 0;
             shared_memory->number = slot_to_use;
             // printf("THE VALUE OF NUMBER NOW WHICH IS THE SLOT IS %lu \n", shared_memory->number);
 
             shared_memory->client_flag = 0;
+
+            // print_jobs(&job_queue);
 
             // this is where we would create thread
             // for (int i = 0; i < 5; i ++)

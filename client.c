@@ -120,7 +120,7 @@ int main(int argc, char** argv)
         // blocking, will wait for server to read
         while (shared_memory->client_flag == 1) {}
 
-        while (shared_memory->server_flag[0] == 1) {}
+        // while (shared_memory->server_flag[0] == 1) {}
 
 
         // server writes the slot the number is in into the number variable
