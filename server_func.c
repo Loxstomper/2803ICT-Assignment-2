@@ -125,6 +125,7 @@ void create_shared_memory(Shared_Memory** shared_memory)
     for (int i = 0; i < N_SLOTS; i ++)
     {
         (*shared_memory)->slots[i] = -1; // means empty
-        (*shared_memory)->server_flag[i] = 0;
+        (*shared_memory)->server_flag[i] = 'f'; // f for finished
+        (*shared_memory)->progress[i] = 0.0f;
     }
 }

@@ -1,4 +1,6 @@
 #include "common.h"
+#include <sys/time.h>
+#include <pthread.h>
 
 
 
@@ -6,20 +8,98 @@ struct Query
 {
     unsigned long int n;
     unsigned long int* slots;
+    int slot;
     char* server_flag;
-    // start time
+    float* progress;
+    struct timeval start_time;
 } typedef Query;
 
+
 int shm_id;
+struct timeval last_update;
+pthread_mutex_t progress_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 // had to make global so the CTRL+C event cant modify the shared memory to shutdown server
 Shared_Memory* shared_memory;
 
 
-
-void setup_query()
+void* watch(void* arg)
 {
+    Query* query = (Query*) arg;
+    struct timeval end_time, current;
+    double duration;
+    int printed_progress;
+    // printf("THREAD CREATED \n");
 
+    while (1)
+    {
+
+        // get current time, 
+        gettimeofday(&current, NULL);
+
+        // 5 seconds just for testing
+        pthread_mutex_lock(&progress_mutex);
+        if ((current.tv_sec - last_update.tv_sec) >= 1)
+        {
+            printed_progress = 0;
+            for (int i = 0; i < N_SLOTS; i ++)
+            {
+                if (query->server_flag[i] != 'f')
+                {
+                    if (!printed_progress)
+                    {
+                        printf("Progress: ");
+                        printed_progress = 1;
+                       
+                    }
+                    // + 1 because not 0 index
+                    printf("Q%d:%.2f%% ", i + 1, query->progress[i]);
+                }
+            }
+
+            if (printed_progress)
+            {
+                printf("\n");
+            }
+            // now pretend its been updated
+            last_update.tv_sec = current.tv_sec;
+
+        }
+        pthread_mutex_unlock(&progress_mutex);
+
+
+
+        // not being used
+        if (query->slot == -1)
+        {
+            continue;
+        }
+
+        if (query->server_flag[query->slot] == 1)
+        {
+            printf("Query %d: factor %lu \n", query->slot, query->slots[query->slot]);
+            // tell server data was recieved
+            query->server_flag[query->slot] = 0;
+            
+            // update our global var of the time of the last update
+            gettimeofday(&last_update, NULL);
+        }
+
+        if (query->server_flag[query->slot] == 'f')
+        {
+            printf("Query complete for %lu \n", query->n);
+            gettimeofday(&end_time, NULL);
+
+
+            duration = end_time.tv_sec - query->start_time.tv_sec + (end_time.tv_usec - query->start_time.tv_usec);
+
+            printf("Time taken: %.6f \n", duration / 1000000.0);
+            // query->server_flag[query->slot] == 'g';
+
+            // stop the thread from doing more
+            query->slot = -1;
+        }
+    }
 }
 
 
@@ -77,16 +157,43 @@ void connect_shared_memory(Shared_Memory** shared_memory)
 // maybe have one thread working in the background printing the response from server
 int main(int argc, char** argv)
 {
-
+    gettimeofday(&last_update, NULL);
     signal(SIGINT, cleanup);
 
     char user_input[1000];
     int n_requests = 0;
 
+    unsigned long int number;
+
+
 
     int used_slot;
 
     connect_shared_memory(&shared_memory);
+
+
+    // init the queries
+    Query queries[N_SLOTS];
+    for (int i = 0; i < N_SLOTS; i ++)
+    {
+        queries[i].server_flag = shared_memory->server_flag;
+        queries[i].slots = shared_memory->slots;
+        queries[i].slot = -1;
+        queries[i].progress = shared_memory->progress;
+    }
+
+    // client threads
+    pthread_t threads[N_SLOTS];
+
+    for (int i = 0; i < N_SLOTS; i ++)
+    {
+        pthread_create(&threads[i], NULL, &watch, &queries[i]);
+    }
+    // detach
+    for (int i = 0; i < N_SLOTS; i ++)
+    {
+        pthread_detach(threads[i]);
+    }
 
     while (1)
     {
@@ -116,6 +223,7 @@ int main(int argc, char** argv)
 
 
         shared_memory->number = strtoul(user_input, NULL, 0);
+        number = shared_memory->number;
         shared_memory->client_flag = 1;
 
         // blocking, will wait for server to read
@@ -125,21 +233,30 @@ int main(int argc, char** argv)
         // printf("Just got a response from the server ");
         printf("USING SLOT (number): %lu\n", shared_memory->number);
 
+        // updating the struct for the corresponding thread
         int slot = shared_memory->number;
-        uli last;
-        uli update;
+        queries[slot].slot = slot;
+        queries[slot].n = number;
+        queries[slot].start_time;
+        gettimeofday(&queries[slot].start_time, NULL);
 
-        // shared_memory->server_flag[0] = 0;
+        // consider this an update
+        last_update.tv_sec = queries[slot].start_time.tv_sec;
 
-        while (shared_memory->server_flag[0] != 'f')
-        {
-            // waits until server_flag is 1
-            while (shared_memory->server_flag[slot] == 0) {}
-            printf("NEW FACTOR!: %lu\n", shared_memory->slots[slot]);
-            shared_memory->server_flag[slot] = 0;
-        }
+        // uli last;
+        // uli update;
 
-        printf("Complete \n");
+        // // shared_memory->server_flag[0] = 0;
+
+        // while (shared_memory->server_flag[0] != 'f')
+        // {
+        //     // waits until server_flag is 1
+        //     while (shared_memory->server_flag[slot] == 0) {}
+        //     printf("NEW FACTOR!: %lu\n", shared_memory->slots[slot]);
+        //     shared_memory->server_flag[slot] = 0;
+        // }
+
+        // printf("Complete \n");
     }
 
     return 0;

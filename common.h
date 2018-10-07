@@ -27,6 +27,7 @@ struct Shared_Memory
     uli   slots[N_SLOTS];
     char  server_flag[N_SLOTS];
     char  client_flag;
+    float progress[N_SLOTS];
 } typedef Shared_Memory;
 
 #endif

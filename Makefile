@@ -10,7 +10,7 @@ server_func.o: server_func.c
 	gcc -c server_func.c
 
 client: client.o common.o
-	gcc -o ./dist/client client.o common.o
+	gcc -o ./dist/client client.o common.o -lpthread
 
 client.o: client.c
 	gcc -c client.c 

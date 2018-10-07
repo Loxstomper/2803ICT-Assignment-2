@@ -8,6 +8,7 @@ void* thread_function(void* t_args)
     Thread_Args* thread_args = (Thread_Args*) t_args;
     Job_Queue* job_queue = thread_args->job_queue;
     Job to_do;
+    float prog;
 
     // not sure if i need to use mutex
     while (1)
@@ -37,9 +38,9 @@ void* thread_function(void* t_args)
         //     // printf("EMPTY JOBS\n");
         //     continue;
         // }
-        printf("WORKING ON JOB: slot: %d n: %d \n", to_do.slot, to_do.n);
+        // printf("WORKING ON JOB: slot: %d n: %d \n", to_do.slot, to_do.n);
 
-        int progress = 0;
+        // int progress = 0;
         // five precent
         // unsigned long int progess_update = (to_do.n / 20);
         // printf("%lu, 1% = %lu \n", to_do.n, progess_update);
@@ -75,12 +76,19 @@ void* thread_function(void* t_args)
         }
 
         thread_args->remaining_jobs[to_do.slot] --;
-        printf("JOBS REMANING: %d \n", thread_args->remaining_jobs[to_do.slot]);
+        // progress update for the slot
+
+        prog = ((32 - thread_args->remaining_jobs[to_do.slot]) / 32.0) * 100;
+        printf("SLOT %d: %f % \n", to_do.slot, prog);
+        thread_args->shared_memory->progress[to_do.slot] = prog;
+
+        // printf("JOBS REMANING: %d \n", thread_args->remaining_jobs[to_do.slot]);
 
         // bit dodgy
         if (thread_args->remaining_jobs[to_do.slot] == 0)
         {
             thread_args->shared_memory->server_flag[to_do.slot] = 'f';
+            printf("SLOT %d: Complete \n", to_do.slot);
         }
     
     }
