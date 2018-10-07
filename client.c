@@ -235,6 +235,9 @@ int main(int argc, char** argv)
 
         // updating the struct for the corresponding thread
         int slot = shared_memory->number;
+
+        // reset the progress
+        shared_memory->progress[slot] = 0.0f;
         queries[slot].slot = slot;
         queries[slot].n = number;
         queries[slot].start_time;

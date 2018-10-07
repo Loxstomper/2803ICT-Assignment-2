@@ -87,13 +87,12 @@ void* thread_function(void* t_args)
         // bit dodgy
         if (thread_args->remaining_jobs[to_do.slot] == 0)
         {
+            // signify that this slot is finished
             thread_args->shared_memory->server_flag[to_do.slot] = 'f';
+            thread_args->shared_memory->slots[to_do.slot] = -1;
             printf("SLOT %d: Complete \n", to_do.slot);
         }
-    
     }
-
-
 }
 
 void init_thread_pool(Thread_Pool* tp, int capacity, Job_Queue* job_queue, Thread_Args* thread_args)
