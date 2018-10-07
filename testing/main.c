@@ -11,16 +11,25 @@ struct Thread_Pool
 
 } typedef Thread_Pool;
 
+struct Job 
+{
+    int slot;
+    int n;
+
+} typedef Job;
+
 struct Job_Queue
 {
     int head;
     int tail;
     int size;
     int length;
-    int* jobs;
+    // int* jobs;
+    Job* jobs;
 } typedef Job_Queue;
 
-int new_job(Job_Queue* job_queue, int val)
+
+int new_job(Job_Queue* job_queue, Job val)
 {
     if ( (*job_queue).size < (*job_queue).length )
     {
@@ -38,19 +47,20 @@ int new_job(Job_Queue* job_queue, int val)
     return 0;
 }
 
-int take_job(Job_Queue* job_queue)
+Job take_job(Job_Queue* job_queue)
 {
     if ( (*job_queue).size == 0 )
     {
-        return 0;
+        Job a = {-1, -1};
+        return a;
     }
 
-    int pop;
+    Job pop;
 
     pop = (*job_queue).jobs[(*job_queue).head];
 
     printf("POPPING: %d\n", pop);
-    (*job_queue).jobs[(*job_queue).head] = -1;
+    // (*job_queue).jobs[(*job_queue).head] = -1;
 
     (*job_queue).head = ((*job_queue).head + 1) % (*job_queue).length;
     (*job_queue).size --;
@@ -60,12 +70,12 @@ int take_job(Job_Queue* job_queue)
 
 void print_jobs(Job_Queue* job_queue)
 {
-    int v;
+    Job v;
     for (int i = 0; i < (*job_queue).size; i ++)
     {
         v = (*job_queue).jobs[ ((*job_queue).head + i) % (*job_queue).length ];
 
-        printf(" %d, ", v);
+        printf("SLOT: %d, N: %d", v.slot, v.n);
     }
     
     printf("\n");
@@ -77,7 +87,8 @@ void init_queue(Job_Queue* queue, int length)
     (*queue).tail = -1;
     (*queue).size = 0;
     (*queue).length = length;
-    (*queue).jobs = (int*) calloc(sizeof(int), sizeof(int) * length);
+    // (*queue).jobs = (int*) calloc(sizeof(int), sizeof(int) * length);
+    (*queue).jobs = (Job*) calloc(sizeof(Job), sizeof(Job) * length);
 
     if ((*queue).jobs == NULL)
     {
@@ -121,60 +132,13 @@ int main(int argc, char** argv)
     printf("SIZE: %d \n", job_queue.size);
     printf("LENGTH: %d \n", job_queue.length);
 
-    new_job(&job_queue, 1);
-    new_job(&job_queue, 2);
-    new_job(&job_queue, 3);
-
-    take_job(&job_queue);
-
-    new_job(&job_queue, 4);
-    new_job(&job_queue, 5);
-
-    take_job(&job_queue);
-
-    new_job(&job_queue, 6);
-    new_job(&job_queue, 7);
-    new_job(&job_queue, 8);
-    new_job(&job_queue, 9);
-
+    Job a = {1, 2};
+    new_job(&job_queue, a);
+    a.slot = 2;
+    a.n = 4;
+    new_job(&job_queue, a);
 
     print_jobs(&job_queue);
 
-
-    for (int i = 0; i < job_queue.length; i ++)
-    {
-        printf("%d, ", job_queue.jobs[i]);
-    }
-
-    printf("\n");
-
-    take_job(&job_queue);
-    print_jobs(&job_queue);
-
-    for (int i = 0; i < job_queue.length; i ++)
-    {
-        printf("%d, ", job_queue.jobs[i]);
-    }
-
-    printf("\n");
-
-    take_job(&job_queue);
-    for (int i = 0; i < job_queue.length; i ++)
-    {
-        printf("%d, ", job_queue.jobs[i]);
-    }
-
-    printf("\n");
-
-
-
-
-
-
-
-
-
-
-
-    return 1;
+    return 0;
 }
