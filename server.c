@@ -3,51 +3,32 @@
 #include "thread_pool.h"
 #include "job_queue.h"
 
-
-// making this a yucky global so it can be deleted on CTRL+C
-int shm_id;
-
-void cleanup(int param)
-{
-    printf("\nCleaning up.....\n");
-    printf("Removing shared memory\n");
-    shmctl(shm_id, IPC_RMID, NULL);
-    printf("Done\n");
-    exit(0);
-}
-
-// attaches to shared memory and initialises the struct
-void create_shared_memory(Shared_Memory** shared_memory)
-{
-    key_t key = ftok("shmfile", SHARED_MEMORY_KEY);
-    shm_id = shmget(key, sizeof(Shared_Memory), IPC_CREAT | 0666);
-
-    // validate that it created
-    if (shm_id < 0)
-    {
-        perror("Shared memory creation failed....");
-        exit(1);
-    }
-
-    // update pointer to the shared memory
-    *shared_memory = (Shared_Memory*) shmat(shm_id, NULL, 0);
-
-    // now do the initialisation - from task sheet - (basically just zero everything)
-    (*shared_memory)->client_flag = 0;
-    (*shared_memory)->number = 0;
-
-    for (int i = 0; i < N_SLOTS; i ++)
-    {
-        (*shared_memory)->slots[i] = -1; // means empty
-        (*shared_memory)->server_flag[i] = 0;
-    }
-}
-
 int main(int argc, char** argv)
 {
-
     // THE CLIENT KILLS SERVER
     signal(SIGINT, cleanup);
+
+    int n_threads;
+
+    if (argc > 1)
+    {
+        n_threads = atoi(argv[1]);
+        printf("Running server with %d threads.\n", n_threads);
+    }
+    else 
+    {
+        n_threads = 320;
+        printf("Running server with %d threads.\n", n_threads);
+    }
+
+    // setup threadpool and jobqueue
+    Thread_Pool thread_pool;
+    Job_Queue job_queue;
+
+    init_queue(&job_queue, N_SLOTS * N_ROTATIONS);
+    init_thread_pool(&thread_pool, n_threads, &job_queue);
+
+
 
     unsigned long int** rotations;
     // mallocs the 2d array
@@ -81,8 +62,8 @@ int main(int argc, char** argv)
 
         if (shared_memory->client_flag == 1)
         {
-            // printf("Oh boy the client has sent me a new number\n");
-            // printf("Number: %lu \n", shared_memory->number);
+            printf("Oh boy the client has sent me a new number\n");
+            printf("Number: %lu \n", shared_memory->number);
 
             // figure out what slot is usable
             slot_to_use = -1;

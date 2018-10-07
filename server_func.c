@@ -92,3 +92,39 @@ void debug_print(Shared_Memory** shared_memory)
 
 
 }
+
+void cleanup(int param)
+{
+    printf("\nCleaning up.....\n");
+    printf("Removing shared memory\n");
+    shmctl(shm_id, IPC_RMID, NULL);
+    printf("Done\n");
+    exit(0);
+}
+
+// attaches to shared memory and initialises the struct
+void create_shared_memory(Shared_Memory** shared_memory)
+{
+    key_t key = ftok("shmfile", SHARED_MEMORY_KEY);
+    shm_id = shmget(key, sizeof(Shared_Memory), IPC_CREAT | 0666);
+
+    // validate that it created
+    if (shm_id < 0)
+    {
+        perror("Shared memory creation failed....");
+        exit(1);
+    }
+
+    // update pointer to the shared memory
+    *shared_memory = (Shared_Memory*) shmat(shm_id, NULL, 0);
+
+    // now do the initialisation - from task sheet - (basically just zero everything)
+    (*shared_memory)->client_flag = 0;
+    (*shared_memory)->number = 0;
+
+    for (int i = 0; i < N_SLOTS; i ++)
+    {
+        (*shared_memory)->slots[i] = -1; // means empty
+        (*shared_memory)->server_flag[i] = 0;
+    }
+}

@@ -65,4 +65,11 @@ void init_queue(Job_Queue* queue, int length)
     {
         perror("Calloc failed in job queue");
     }
+
+    // NOT WORKING IN STRUCT
+    // (*queue).pop_mutex = PTHREAD_MUTEX_INITIALIZER;
+    // (*queue).add_mutex = PTHREAD_MUTEX_INITIALIZER;
+
+    pthread_mutex_init(&(*queue).pop_mutex, NULL);
+    pthread_mutex_init(&(*queue).add_mutex, NULL);
 }

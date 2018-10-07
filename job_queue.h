@@ -3,11 +3,12 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <pthread.h>
 
 struct Job 
 {
     int slot;
-    int n;
+    unsigned long int n;
 
 } typedef Job;
 
@@ -19,6 +20,8 @@ struct Job_Queue
     int length;
     // int* jobs;
     Job* jobs;
+    pthread_mutex_t pop_mutex;
+    pthread_mutex_t add_mutex;
 } typedef Job_Queue;
 
 

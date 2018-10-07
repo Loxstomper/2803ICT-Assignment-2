@@ -7,15 +7,25 @@ void* thread_function(void* j_q)
     Job_Queue* job_queue = (Job_Queue*) j_q;
     Job to_do;
 
+    // not sure if i need to use mutex
     while (1)
     {
-        to_do = take_job(job_queue);
+        // MUTEX LOCK
+        pthread_mutex_lock(&job_queue->pop_mutex);
 
-        if (to_do.slot == -1 && to_do.n == -1)
+        if (job_queue->size > 1)
         {
-            // printf("EMPTY JOBS\n");
-            continue;
+            to_do = take_job(job_queue);
         }
+
+        // MUTEX UNLOCK
+        pthread_mutex_lock(&job_queue->pop_mutex);
+
+        // if (to_do.slot == -1 && to_do.n == -1)
+        // {
+        //     // printf("EMPTY JOBS\n");
+        //     continue;
+        // }
         printf("WORKING ON JOB: slot: %d n: %d \n", to_do.slot, to_do.n);
     }
 

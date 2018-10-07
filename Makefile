@@ -1,7 +1,7 @@
 all: server client
 
 server: server.o common.o server_func.o job_queue.o thread_pool.o
-	gcc -o ./dist/server server.o common.o server_func.o
+	gcc -o ./dist/server server.o common.o server_func.o job_queue.o thread_pool.o -lpthread
 
 server.o: server.c
 	gcc -c server.c
@@ -19,7 +19,7 @@ common.o: common.c
 	gcc -c common.c
 
 job_queue.o: job_queue.c
-	gcc -c job_queue.c
+	gcc -c job_queue.c -lpthread
 
 thread_pool.o: thread_pool.c 
 	gcc -c thread_pool.c
