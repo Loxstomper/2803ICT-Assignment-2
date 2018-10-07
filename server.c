@@ -3,13 +3,6 @@
 #include "thread_pool.h"
 #include "job_queue.h"
 
-struct Thread_Args
-{
-    pthread_mutex_t** slot_mutex;
-    unsigned long int** slots;
-    char** server_flag;
-} typedef Thread_Args;
-
 int main(int argc, char** argv)
 {
     // THE CLIENT KILLS SERVER
@@ -28,49 +21,43 @@ int main(int argc, char** argv)
         printf("Running server with %d threads.\n", n_threads);
     }
 
+    // shared memory
+    Shared_Memory* shared_memory;
+    create_shared_memory(&shared_memory);
+
+    // rotations
+    unsigned long int** rotations;
+    build_rotations(&rotations);
+
+    // slot mutex
+    pthread_mutex_t slot_mutex[N_SLOTS];
+    for (int i = 0; i < N_SLOTS; i ++)
+    {
+        pthread_mutex_init(&slot_mutex[i], NULL);
+    }
+
     // setup threadpool and jobqueue
     Thread_Pool thread_pool;
     Job_Queue job_queue;
     Job job_to_add;
 
-    init_queue(&job_queue, N_SLOTS * N_ROTATIONS);
-    init_thread_pool(&thread_pool, n_threads, &job_queue);
-
-
-
-    unsigned long int** rotations;
-    // mallocs the 2d array
-    build_rotations(&rotations);
-
-    Shared_Memory* shared_memory;
-
-    create_shared_memory(&shared_memory);
-
-    pthread_mutex_t* slot_mutex[N_SLOTS];
-    for (int i = 0; i < N_SLOTS; i ++)
-    {
-        pthread_mutex_init(slot_mutex[i], NULL);
-    }
-
+    // setup thread args
     Thread_Args thread_args;
-    thread_args.slots = &shared_memory->slots;
-    thread_args.server_flag = &shared_memory->server_flag;
-    thread_args.slot_mutex = &slot_mutex;
+    thread_args.shared_memory = shared_memory;
+    thread_args.slot_mutex = slot_mutex;
+    thread_args.job_queue = &job_queue;
+
+
+    init_queue(&job_queue, N_SLOTS * N_ROTATIONS);
+    init_thread_pool(&thread_pool, n_threads, &job_queue, &thread_args);
+
+
+
+
 
 
 
     int slot_to_use;
-    // number = 4;
-    // int index = 0;
- 
-    // rotate(rotations, index, number);
-    // print_rotations(rotations);
-
-    // factor(rotations[0][0]);
-
-    // make all the slots value to be -1 "empty / finished"
-    // for (int i = 0; i < N_SLOTS; slots[i] = -1, i ++) {}
-
 
     while (1)
     {
@@ -120,6 +107,7 @@ int main(int argc, char** argv)
                 new_job(&job_queue, job_to_add);
             }
             pthread_mutex_unlock(&job_queue.add_mutex);
+
 
             // slot
             shared_memory->slots[slot_to_use] = 0;

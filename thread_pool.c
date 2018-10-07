@@ -1,10 +1,12 @@
 #include "thread_pool.h"
+#include "server_func.h"
 
-void* thread_function(void* j_q)
+void* thread_function(void* t_args)
 {
-    printf("Thread started \n");
+    // printf("Thread started \n");
     // this makes sense because these threads are going to be persistent
-    Job_Queue* job_queue = (Job_Queue*) j_q;
+    Thread_Args* thread_args = (Thread_Args*) t_args;
+    Job_Queue* job_queue = thread_args->job_queue;
     Job to_do;
 
     // not sure if i need to use mutex
@@ -57,14 +59,14 @@ void* thread_function(void* j_q)
             // }
         }
 
-        printf("Done\n");
+        printf("DONE\n");
     
     }
 
 
 }
 
-void init_thread_pool(Thread_Pool* tp, int capacity, Job_Queue* job_queue)
+void init_thread_pool(Thread_Pool* tp, int capacity, Job_Queue* job_queue, Thread_Args* thread_args)
 {
     (*tp).capacity = capacity;
     (*tp).used = 0;
@@ -73,7 +75,7 @@ void init_thread_pool(Thread_Pool* tp, int capacity, Job_Queue* job_queue)
     // create the threads
     for (int i = 0; i < (*tp).capacity; i ++)
     {
-        if (pthread_create(&(*tp).pool[i], NULL, thread_function, (void*) job_queue))
+        if (pthread_create(&(*tp).pool[i], NULL, thread_function, (void*) thread_args))
         {
             perror("Failed to create thread \n");
             exit(1);
@@ -89,4 +91,6 @@ void init_thread_pool(Thread_Pool* tp, int capacity, Job_Queue* job_queue)
     {
         pthread_detach((*tp).pool[i]);
     }
+
+    printf("Created threads\n");
 }

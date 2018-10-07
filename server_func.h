@@ -2,6 +2,14 @@
 #define SERVER_FUNC_H
 
 #include "common.h"
+#include "job_queue.h"
+
+struct Thread_Args
+{
+    Shared_Memory* shared_memory;
+    pthread_mutex_t* slot_mutex;
+    Job_Queue* job_queue;
+} typedef Thread_Args;
 
 // making this a yucky global so it can be deleted on CTRL+C
 int shm_id;
